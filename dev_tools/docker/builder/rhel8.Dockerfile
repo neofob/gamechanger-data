@@ -1,1 +1,1 @@
-FROM --platform=x86_64 centos8.4.2105
+FROM --platform=x86_64 rockylinux:9.2

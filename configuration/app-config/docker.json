@@ -28,14 +28,14 @@
     "password": "password",
     "port": 5432,
     "host": "postgres",
-    "database": "postgres"
+    "database": "gc-orchestration"
   },
   "web_db": {
     "username": "postgres",
     "password": "password",
     "port": 5432,
     "host": "postgres",
-    "database": "postgres"
+    "database": "game_changer"
   },
   "es": {
     "ssl": false,
