@@ -25,19 +25,20 @@ ENV LANG="C.utf8" \
 # Additional Repos
 RUN \
       rpm --import https://download.postgresql.org/pub/repos/yum/RPM-GPG-KEY-PGDG \
-  &&  dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
-  &&  rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL \
-  &&  rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8 \
-  &&  dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm
+  && dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm \
+  && rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL \
+  && rpm --import https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-8 
+
+RUN \
+  dnf install -y https://dl.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/e/epel-release-8-19.el8.noarch.rpm
 
 # COMMON Packages & More Particular RPM Dependcies
 RUN \
-      dnf install -y glibc-locale-source.x86_64 \
-  &&  dnf install -y \
-        zip \
+    dnf install -y glibc-locale-source.x86_64 \
+  &&  dnf install -y --nobest zip \
         unzip \
         gzip \
-        zlib \
+        #zlib \
         zlib-devel \
         git \
         git-lfs \
@@ -54,11 +55,12 @@ RUN \
         libtiff-devel \
         libjpeg-turbo \
         libjpeg-turbo-devel \
+        postgresql13 \
+        postgresql-server \
         python38 \
         python38-devel \
         python38-Cython \
-        "postgresql13" \
-        "libpq-devel-13.3-1.el8_4.x86_64" \
+        libpq-devel \
         openblas \
         openblas-threads \
         diffutils \
@@ -186,8 +188,18 @@ RUN \
     "${APP_VENV_CFG}" \
     "${APP_SRC}"
 
+
+RUN ln -s /usr/pgsql-13/bin/pg_config /usr/sbin/pg_config
+RUN export PATH=/usr/pgsql-13/bin/:$PATH
+RUN export LD_LIBRARY_PATH=/usr/pgsql-13/lib
+#RUN dnf remove libpq-devel
+#RUN dnf install libpq-devel
+RUN dnf install -y postgresql13-devel --nobest
+
 # setup venv
 COPY ./dev_tools/requirements/requirements.txt /tmp/requirements.txt
+COPY ./dev_tools/combined_entities.csv ${APP_VENV}/lib/python3.8/site-packages/gamechangerml/data/combined_entities.csv 
+
 RUN \
       python3 -m venv "${APP_VENV}" --prompt app-root \
   &&  "${APP_VENV}/bin/python" -m pip install --upgrade --no-cache-dir pip setuptools wheel \
